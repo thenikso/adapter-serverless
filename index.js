@@ -52,6 +52,7 @@ module.exports = function ({ out = 'build' } = {}) {
 
       builder.log.minor('Cleanup');
       unlinkSync(`${out}/_serverless.js`);
+      unlinkSync(`${out}/app.js`);
     },
   };
 

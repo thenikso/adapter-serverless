@@ -10,6 +10,10 @@ yarn add --dev @thenikso/adapter-serverless
 It uses [serverless-http](https://github.com/dougmoscrop/serverless-http) to wrap
 a [Polka](https://github.com/lukeed/polka) server.
 
+Note that because of the ESM nature of SvelteKit and the non-ESM nature of AWS
+lamnda, this adapter uses [esbuild](https://esbuild.github.io/) to compile your
+app in a CommonJS bundle.
+
 ## Usage
 
 In your `svelte.config.cjs` add the adapter like so:
