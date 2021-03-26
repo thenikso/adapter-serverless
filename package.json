@@ -1,8 +1,23 @@
 {
-  "name": "@thenikso/adapter-serverless",
+  "name": "@nikso/adapter-serverless",
   "version": "0.1.0",
-  "main": "index.js",
   "license": "MIT",
+  "description": "An (experimental) adapter to build a [SvelteKit](https://kit.svelte.dev/) app into a lambda ready handler for [Serverless](https://www.serverless.com/) deployment.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thenikso/adapter-serverless.git"
+  },
+  "keywords": [
+    "sveltekit",
+    "serverless",
+    "adapter"
+  ],
+  "author": "Nicola Peduzzi <thenikso@gmail.com> (http://nikso.net/)",
+  "bugs": {
+    "url": "https://github.com/thenikso/adapter-serverless/issues"
+  },
+  "homepage": "https://github.com/thenikso/adapter-serverless#readme",
+  "main": "index.js",
   "files": [
     "files"
   ],

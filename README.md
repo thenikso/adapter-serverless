@@ -4,7 +4,7 @@ An (experimental) adapter to build a [SvelteKit](https://kit.svelte.dev/) app
 into a lambda ready handler for [Serverless](https://www.serverless.com/) deployment.
 
 ```
-npm install --save-dev @thenikso/adapter-serverless
+npm install --save-dev @nikso/adapter-serverless
 ```
 
 It uses [serverless-http](https://github.com/dougmoscrop/serverless-http) to wrap
@@ -19,7 +19,7 @@ app in a CommonJS bundle.
 In your `svelte.config.cjs` add the adapter like so:
 
 ```js
-const serverless = require('@thenikso/adapter-serverless');
+const serverless = require('@nikso/adapter-serverless');
 const pkg = require('./package.json');
 
 module.exports = {
