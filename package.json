@@ -1,0 +1,22 @@
+{
+  "name": "adapter-serverless",
+  "version": "0.1.0",
+  "main": "index.js",
+  "files": [
+    "files"
+  ],
+  "scripts": {
+    "build": "esbuild src/serverless.js --bundle --format=esm --platform=node --external:'./app.*' --outfile=files/serverless.js",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "next",
+    "compression": "1.7.4",
+    "polka": "0.5.2",
+    "serverless-http": "2.7.0",
+    "sirv": "1.0.11"
+  },
+  "dependencies": {
+    "esbuild": "0.10.1"
+  }
+}
