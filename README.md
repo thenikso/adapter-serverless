@@ -1,10 +1,10 @@
 # adapter-serverless for SvelteKit
 
-An (esperimental) adapter building a lambda ready handler for
-[Serverless](https://www.serverless.com/) applications.
+An (experimental) adapter to build a [SvelteKit](https://kit.svelte.dev/) app
+into a lambda ready handler for [Serverless](https://www.serverless.com/) deployment.
 
 ```
-yarn add --dev @thenikso/adapter-serverless
+npm install --save-dev @thenikso/adapter-serverless
 ```
 
 It uses [serverless-http](https://github.com/dougmoscrop/serverless-http) to wrap
@@ -45,6 +45,9 @@ module.exports = {
 
 ## Example serverless.yml
 
+After building your Svelte app with `npm run build`, an example Serverless
+configuration to run `serverless offline` could be:
+
 ```yml
 service: svelte-app
 
@@ -68,4 +71,7 @@ functions:
     events:
       - http: ANY /
       - http: ANY /{proxy+}
+
+plugins:
+  - serverless-offline
 ```
