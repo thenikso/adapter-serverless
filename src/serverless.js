@@ -37,6 +37,7 @@ const server = polka().use(
       body: await get_body(req),
       query: new URLSearchParams(req.query),
     };
+    console.log(params)
     const rendered = await app.render(params);
 
     if (rendered) {

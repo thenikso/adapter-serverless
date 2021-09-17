@@ -14,16 +14,16 @@ module.exports = function ({ out = 'build' } = {}) {
     name: 'adapter-serverless',
 
     async adapt(builder) {
-      builder.log.minor('Copying assets');
+      builder.utils.log.minor('Copying assets');
       const static_directory = join(out, 'assets');
-      builder.copy_client_files(static_directory);
-      builder.copy_static_files(static_directory);
+      builder.utils.copy_client_files(static_directory);
+      builder.utils.copy_static_files(static_directory);
 
-      builder.log.minor('Copying server');
-      builder.copy_server_files(out);
+      builder.utils.log.minor('Copying server');
+      builder.utils.copy_server_files(out);
       copyFileSync(`${__dirname}/files/serverless.js`, `${out}/_serverless.js`);
 
-      builder.log.minor('Building lambda');
+      builder.utils.log.minor('Building lambda');
       esbuild.buildSync({
         entryPoints: [`${out}/_serverless.js`],
         outfile: `${out}/serverless.js`,
@@ -45,12 +45,12 @@ module.exports = function ({ out = 'build' } = {}) {
         ),
       );
 
-      builder.log.minor('Prerendering static pages');
-      await builder.prerender({
+      builder.utils.log.minor('Prerendering static pages');
+      await builder.utils.prerender({
         dest: `${out}/prerendered`,
       });
 
-      builder.log.minor('Cleanup');
+      builder.utils.log.minor('Cleanup');
       unlinkSync(`${out}/_serverless.js`);
       unlinkSync(`${out}/app.js`);
     },
