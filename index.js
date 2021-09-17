@@ -27,6 +27,7 @@ module.exports = function ({ out = 'build' } = {}) {
       esbuild.buildSync({
         entryPoints: [`${out}/_serverless.js`],
         outfile: `${out}/serverless.js`,
+        inject: [join(`files/shims.js`)],
         format: 'cjs',
         bundle: true,
         platform: 'node',
