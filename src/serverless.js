@@ -1,50 +1,66 @@
+import serverless from 'serverless-http';
+import fs from 'fs';
+import path from 'path';
+import polka from 'polka';
+import sirv from 'sirv';
+import compression from 'compression';
 import { URLSearchParams } from 'url';
-import { render, init } from './app.js'
+import * as app from './app.js';
 
-init();
+app.init();
 
-export async function handler(event) {
-  const { path, headers, multiValueQueryStringParameters } = event;
+const mutable = (dir) =>
+  sirv(dir, {
+    etag: true,
+    maxAge: 0,
+  });
 
-  const query = new URLSearchParams();
-  if (multiValueQueryStringParameters) {
-    Object.keys(multiValueQueryStringParameters).forEach(k => {
-      const vs = multiValueQueryStringParameters[k]
-      vs.forEach(v => {
-        query.append(k, v)
-      })
-    })
-  }
+const noop_handler = (_req, _res, next) => next();
+
+const prerendered_handler = fs.existsSync('prerendered')
+  ? mutable('prerendered')
+  : noop_handler;
+
+const assets_handler = sirv(path.join(__dirname, '/assets'), {
+  maxAge: 31536000,
+  immutable: true,
+});
+
+const server = polka().use(
+  compression({ threshold: 0 }),
+  assets_handler,
+  prerendered_handler,
+  async (req, res) => {
+
+    const { path, httpMethod, headers, rawQuery, body, isBase64Encoded } = req;
+
+    const query = new URLSearchParams(rawQuery);
+
+    const encoding = isBase64Encoded ? 'base64' : headers['content-encoding'] || 'utf-8';
+    const rawBody = typeof body === 'string' ? Buffer.from(body, encoding) : body;
 
 
-  const rendered = await render({
-    host: event.requestContext.domainName,
-    method: event.httpMethod,
-    body: JSON.parse(event.body), // TODO: other payload types
-    headers,
-    query,
-    path,
-  })
+    console.log(req.body.toString())
+    const params = {
+      method: req.method,
+      headers: req.headers,
+      path: req.path || '/',
+      rawBody,
+      query: query
+    };
 
-  if (rendered) {
-    const resp = {
-      headers: {},
-      multiValueHeaders: {},
-      body: rendered.body,
-      statusCode: rendered.status
+    console.log(req);
+    console.log(params);
+    const rendered = await app.render(params);
+
+    if (rendered) {
+      res.writeHead(rendered.status, rendered.headers);
+      res.end(rendered.body);
+    } else {
+      res.statusCode = 404;
+      res.end('Not found');
     }
-    Object.keys(rendered.headers).forEach(k => {
-      const v = rendered.headers[k]
-      if (v instanceof Array) {
-        resp.multiValueHeaders[k] = v
-      } else {
-        resp.headers[k] = v
-      }
-    })
-    return resp
-  }
-  return {
-    statusCode: 404,
-    body: 'Not found.'
-  }
-}
+  },
+);
+
+export const handler = serverless(server);
