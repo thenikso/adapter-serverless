@@ -1,4 +1,4 @@
-const { copyFileSync, writeFileSync, unlinkSync } = require('fs');
+const { copyFileSync, writeFileSync, unlinkSync, readdirSync, statSync } = require('fs');
 const { join } = require('path');
 
 const esbuild = require('esbuild');
@@ -14,26 +14,33 @@ module.exports = function ({ out = 'build' } = {}) {
     name: 'adapter-serverless',
 
     async adapt(builder) {
-      builder.log.minor('Copying assets');
+
       const static_directory = join(out, 'assets');
-      builder.copy_client_files(static_directory);
-      builder.copy_static_files(static_directory);
+      const server_directory = join(out, 'server');
 
-      builder.log.minor('Copying server');
-      builder.copy_server_files(out);
-      copyFileSync(`${__dirname}/files/serverless.js`, `${out}/_serverless.js`);
+      builder.utils.log.minor('Copying assets');
+      builder.utils.copy_client_files(join(static_directory, 'assets'));
+      builder.utils.copy_static_files(static_directory);
 
-      builder.log.minor('Building lambda');
+
+      builder.utils.log.minor('Copying server');
+      builder.utils.copy_server_files(out);
+      copyFileSync(`${__dirname}/files/serverless.js`, `${server_directory}/_serverless.js`);
+      copyFileSync(`${__dirname}/src/shims.js`, `${server_directory}/shims.js`);
+
+
+      builder.utils.log.minor('Building lambda');
       esbuild.buildSync({
-        entryPoints: [`${out}/_serverless.js`],
-        outfile: `${out}/serverless.js`,
+        entryPoints: [`${server_directory}/_serverless.js`],
+        outfile: `${server_directory}/serverless.js`,
+        inject: [join(`${server_directory}/shims.js`)],
         format: 'cjs',
         bundle: true,
         platform: 'node',
       });
 
       writeFileSync(
-        `${out}/package.json`,
+        `${server_directory}/package.json`,
         JSON.stringify(
           {
             name: 'svelte-serverless',
@@ -45,16 +52,25 @@ module.exports = function ({ out = 'build' } = {}) {
         ),
       );
 
-      builder.log.minor('Prerendering static pages');
-      await builder.prerender({
+      builder.utils.log.minor('Prerendering static pages');
+      await builder.utils.prerender({
         dest: `${out}/prerendered`,
       });
 
-      builder.log.minor('Cleanup');
-      unlinkSync(`${out}/_serverless.js`);
+      builder.utils.log.minor('Cleanup');
+      unlinkSync(`${server_directory}/_serverless.js`);
       unlinkSync(`${out}/app.js`);
     },
   };
 
   return adapter;
 };
+
+function ThroughDirectory(Directory, Files = []) {
+  readdirSync(Directory).forEach(File => {
+    const Absolute = join(Directory, File);
+    if (statSync(Absolute).isDirectory()) return ThroughDirectory(Absolute, Files);
+    else return Files.push(Absolute);
+  });
+  return Files
+}

@@ -1,12 +1,12 @@
 import serverless from 'serverless-http';
 import fs from 'fs';
-import path from 'path';
 import polka from 'polka';
 import sirv from 'sirv';
 import compression from 'compression';
 import { URLSearchParams } from 'url';
-import { get_body } from '@sveltejs/kit/http';
-import * as app from './app.js';
+import * as app from '../app.js';
+
+app.init();
 
 const mutable = (dir) =>
   sirv(dir, {
@@ -20,23 +20,31 @@ const prerendered_handler = fs.existsSync('prerendered')
   ? mutable('prerendered')
   : noop_handler;
 
-const assets_handler = sirv(path.join(__dirname, '/assets'), {
-  maxAge: 31536000,
-  immutable: true,
-});
 
 const server = polka().use(
   compression({ threshold: 0 }),
-  assets_handler,
   prerendered_handler,
   async (req, res) => {
+
+    const { path, httpMethod, headers, rawQuery, body, isBase64Encoded } = req;
+
+    const query = new URLSearchParams(rawQuery);
+
+    const encoding = isBase64Encoded ? 'base64' : headers['content-encoding'] || 'utf-8';
+    const rawBody = typeof body === 'string' ? Buffer.from(body, encoding) : body;
+
+
+    console.log(req.body.toString())
     const params = {
       method: req.method,
       headers: req.headers,
       path: req.path || '/',
-      body: await get_body(req),
-      query: new URLSearchParams(req.query),
+      rawBody,
+      query: query
     };
+
+    console.log(req);
+    console.log(params);
     const rendered = await app.render(params);
 
     if (rendered) {

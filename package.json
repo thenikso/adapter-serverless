@@ -22,7 +22,8 @@
     "files"
   ],
   "scripts": {
-    "build": "esbuild src/serverless.js --bundle --format=esm --platform=node --external:'./app.*' --outfile=files/serverless.js",
+    "build": "esbuild src/serverless.js --bundle --format=esm --platform=node --external:'../app.*' --outfile=files/serverless.js",
+    "prepare": "npm run build",
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
