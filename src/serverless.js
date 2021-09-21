@@ -1,11 +1,10 @@
 import serverless from 'serverless-http';
 import fs from 'fs';
-import path from 'path';
 import polka from 'polka';
 import sirv from 'sirv';
 import compression from 'compression';
 import { URLSearchParams } from 'url';
-import * as app from './app.js';
+import * as app from '../app.js';
 
 app.init();
 
@@ -21,14 +20,9 @@ const prerendered_handler = fs.existsSync('prerendered')
   ? mutable('prerendered')
   : noop_handler;
 
-const assets_handler = sirv(path.join(__dirname, '/assets'), {
-  maxAge: 31536000,
-  immutable: true,
-});
 
 const server = polka().use(
   compression({ threshold: 0 }),
-  assets_handler,
   prerendered_handler,
   async (req, res) => {
 
